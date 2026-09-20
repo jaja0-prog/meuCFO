@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Meu CFO — controle financeiro pessoal e empresarial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js"></script>
+<style>
+  :root {
+    --bg: #0b1220;
+    --surface: #111a2b;
+    --surface2: #16213a;
+    --border: #22304a;
+    --fg: #e9edf5;
+    --muted: #8b98b3;
+    --primary: #3e7cff;
+    --primary-fg: #ffffff;
+    --accent: #22c7a9;
+    --warning: #e8a33d;
+    --danger: #e5534b;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  a { color: inherit; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ============================== ICONS ============================== */
+function Icon({ name, size = 18, className = '' }) {
+  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', className };
+  const paths = {
+    dashboard: <><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></>,
+    tx: <><path d="M7 7h13l-3-3M17 17H4l3 3"/></>,
+    wallet: <><path d="M3 7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><circle cx="16.5" cy="13.5" r="1.2" fill="currentColor" stroke="none"/></>,
+    card: <><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><path d="M2.5 9.5h19"/></>,
+    target: <><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></>,
+    trend: <><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></>,
+    building: <><rect x="4" y="3" width="10" height="18" rx="1"/><rect x="16" y="9" width="4" height="12" rx="1"/><path d="M7 7h1M11 7h1M7 11h1M11 11h1M7 15h1M11 15h1"/></>,
+    report: <><path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="2.6" height="6" fill="currentColor" stroke="none"/><rect x="12" y="8" width="2.6" height="10" fill="currentColor" stroke="none"/><rect x="17" y="5" width="2.6" height="13" fill="currentColor" stroke="none"/></>,
+    help: <><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5a2.8 2.8 0 1 1 3.9 2.6c-0.8 0.4-1.1 0.9-1.1 1.7"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></>,
+    settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z"/></>,
+    plus: <><path d="M12 5v14M5 12h14"/></>,
+    trash: <><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/></>,
+    question: <><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5a2.8 2.8 0 1 1 3.9 2.6c-0.8 0.4-1.1 0.9-1.1 1.7"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></>,
+    menu: <><path d="M4 6h16M4 12h16M4 18h16"/></>,
+    bell: <><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 19a2 2 0 0 0 4 0"/></>,
+    x: <><path d="M6 6l12 12M18 6 6 18"/></>,
+    arrowRight: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
+    arrowLeft: <><path d="M19 12H5M11 18l-6-6 6-6"/></>,
+    user: <><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></>,
+  };
+  return <svg {...common}>{paths[name] || null}</svg>;
+}
+
+/* ============================== HELPERS ============================== */
+function fmt(v) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+}
+function todayIso(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+function uid(prefix) {
+  return prefix + '-' + Math.random().toString(36).slice(2, 10);
+}
+function monthKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+/* ============================== FINANCIAL CALCULATIONS ============================== */
+function sumAccountBalances(accounts) {
+  return accounts.filter(a => !a.archived && a.type !== 'investimento').reduce((s, a) => s + a.balance, 0);
+}
+function calcInvestmentsTotal(investments) {
+  return investments.reduce((s, i) => s + i.currentAmount, 0);
+}
+function calcNetWorth(accounts, investments) {
+  return sumAccountBalances(accounts) + calcInvestmentsTotal(investments);
+}
+function distributeInstallments(totalAmount, installments, purchaseDate, card) {
+  const installmentAmount = Math.round((totalAmount / installments) * 100) / 100;
+  const roundingAdj = Math.round((totalAmount - installmentAmount * installments) * 100) / 100;
+  const purchase = new Date(purchaseDate);
+  const first = new Date(purchase);
+  if (purchase.getDate() > card.closingDay) first.setMonth(first.getMonth() + 1);
+  const out = [];
+  for (let i = 0; i < installments; i++) {
+    const d = new Date(first);
+    d.setMonth(d.getMonth() + i);
+    out.push({ referenceMonth: monthKey(d), amount: i === installments - 1 ? installmentAmount + roundingAdj : installmentAmount });
+  }
+  return out;
+}
+function cardInvoiceTotal(cardId, referenceMonth, cardTx, card) {
+  return cardTx.filter(t => t.cardId === cardId)
+    .flatMap(t => distributeInstallments(t.amount, t.installments, t.date, card))
+    .filter(i => i.referenceMonth === referenceMonth)
+    .reduce((s, i) => s + i.amount, 0);
+}
+function cardLimitUsed(cardId, cardTx, card, fromMonth) {
+  return cardTx.filter(t => t.cardId === cardId)
+    .flatMap(t => distributeInstallments(t.amount, t.installments, t.date, card))
+    .filter(i => i.referenceMonth >= fromMonth)
+    .reduce((s, i) => s + i.amount, 0);
+}
+function calcCommitted(transactions, cardInvoicesTotal) {
+  const pendingExpenses = transactions.filter(t => t.kind === 'despesa' && (t.status === 'pendente' || t.status === 'atrasado')).reduce((s, t) => s + t.amount, 0);
+  return pendingExpenses + cardInvoicesTotal;
+}
+function calcReserved(goals) {
+  return goals.reduce((s, g) => s + g.currentAmount, 0);
+}
+function calcFreeMoney(availableBalance, committed, reserved) {
+  return availableBalance - committed - reserved;
+}
+function calcSafeBalance(availableBalance, transactions, horizonDays = 15) {
+  const now = new Date();
+  const limit = new Date(now); limit.setDate(limit.getDate() + horizonDays);
+  const upcoming = transactions.filter(t => t.kind === 'despesa' && t.status !== 'pago' && t.status !== 'concluido')
+    .filter(t => { const d = new Date(t.date); return d >= now && d <= limit; })
+    .reduce((s, t) => s + t.amount, 0);
+  return availableBalance - upcoming;
+}
+function sumByKindInMonth(transactions, kind, ref) {
+  return transactions.filter(t => t.kind === kind && new Date(t.date).getMonth() === ref.getMonth() && new Date(t.date).getFullYear() === ref.getFullYear())
+    .reduce((s, t) => s + t.amount, 0);
+}
+function goalProgress(goal) {
+  const percent = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+  const remaining = Math.max(goal.targetAmount - goal.currentAmount, 0);
+  const today = new Date(); const deadline = new Date(goal.deadline);
+  const monthsLeft = Math.max((deadline.getFullYear() - today.getFullYear()) * 12 + (deadline.getMonth() - today.getMonth()), 1);
+  return { percent: Math.min(percent, 100), remaining, monthsLeft, suggestedMonthly: remaining / monthsLeft };
+}
+function canISpend(amount, snapshot, goalsAffected) {
+  const safeAfter = snapshot.safeBalance - amount;
+  const freeAfter = snapshot.freeMoney - amount;
+  let message;
+  if (freeAfter < 0) message = 'Essa compra ultrapassa o seu dinheiro livre. Ela vai puxar recursos que já têm outro destino.';
+  else if (safeAfter < 0) message = 'O dinheiro livre cobre essa compra, mas o saldo seguro fica negativo — cuidado com os próximos vencimentos.';
+  else if (goalsAffected) message = 'A compra reduzirá o valor disponível para suas metas.';
+  else message = 'Essa compra cabe no seu dinheiro livre sem afetar metas ou compromissos próximos.';
+  return { amount, safeBefore: snapshot.safeBalance, safeAfter, freeBefore: snapshot.freeMoney, freeAfter, message };
+}
+function businessRevenue(receivables, ref) {
+  return receivables.filter(r => r.status === 'recebido' && sameMonth(r.dueDate, ref)).reduce((s, r) => s + r.amount, 0);
+}
+function businessExpenses(payables, ref) {
+  return payables.filter(p => p.status === 'pago' && sameMonth(p.dueDate, ref)).reduce((s, p) => s + p.amount, 0);
+}
+function sameMonth(dateStr, ref) {
+  const d = new Date(dateStr);
+  return d.getMonth() === ref.getMonth() && d.getFullYear() === ref.getFullYear();
+}
+function cashFlowSeries(receivables, payables, months = 6) {
+  const out = []; const today = new Date(); let running = 0;
+  for (let i = months - 1; i >= 0; i--) {
+    const ref = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const entradas = receivables.filter(r => r.status === 'recebido' && sameMonth(r.dueDate, ref)).reduce((s, r) => s + r.amount, 0);
+    const saidas = payables.filter(p => p.status === 'pago' && sameMonth(p.dueDate, ref)).reduce((s, p) => s + p.amount, 0);
+    running += entradas - saidas;
+    out.push({ month: ref.toLocaleDateString('pt-BR', { month: 'short' }), saldo: running });
+  }
+  return out;
+}
+
+/* ============================== INITIAL (EMPTY) DATA ============================== */
+function seedData() {
+  const PESSOAL = 'ws-pessoal-1';
+  return {
+    profile: { fullName: '', usageMode: 'pessoa_empresa', onboardingDone: false },
+    workspaces: [
+      { id: PESSOAL, type: 'pessoal', name: 'Pessoal', currency: 'BRL' },
+    ],
+    accounts: [],
+    categories: [
+      { id: 'cat-salario', workspaceId: PESSOAL, name: 'Salário', kind: 'receita' },
+      { id: 'cat-freela', workspaceId: PESSOAL, name: 'Freelancer', kind: 'receita' },
+      { id: 'cat-vendas', workspaceId: PESSOAL, name: 'Vendas', kind: 'receita' },
+      { id: 'cat-outros-receita', workspaceId: PESSOAL, name: 'Outros', kind: 'receita' },
+      { id: 'cat-alimentacao', workspaceId: PESSOAL, name: 'Alimentação', kind: 'despesa' },
+      { id: 'cat-transporte', workspaceId: PESSOAL, name: 'Transporte', kind: 'despesa' },
+      { id: 'cat-educacao', workspaceId: PESSOAL, name: 'Educação', kind: 'despesa' },
+      { id: 'cat-saude', workspaceId: PESSOAL, name: 'Saúde', kind: 'despesa' },
+      { id: 'cat-lazer', workspaceId: PESSOAL, name: 'Lazer', kind: 'despesa' },
+      { id: 'cat-compras', workspaceId: PESSOAL, name: 'Compras', kind: 'despesa' },
+      { id: 'cat-contas', workspaceId: PESSOAL, name: 'Contas', kind: 'despesa' },
+      { id: 'cat-outros-despesa', workspaceId: PESSOAL, name: 'Outros', kind: 'despesa' },
+    ],
+    transactions: [],
+    goals: [],
+    investments: [],
+    cards: [],
+    cardTransactions: [],
+    customers: [],
+    suppliers: [],
+    receivables: [],
+    payables: [],
+  };
+}
+
+
+const STORAGE_KEY = 'meucfo:standalone:v2';
+function loadDb() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  const initial = seedData();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(initial)); } catch (e) {}
+  return initial;
+}
+function saveDb(db) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch (e) {}
+}
+
+/* ============================== UI PRIMITIVES ============================== */
+function Button({ children, variant = 'primary', size = 'md', className = '', ...props }) {
+  const variants = {
+    primary: { background: 'var(--primary)', color: 'var(--primary-fg)' },
+    secondary: { background: 'var(--surface2)', color: 'var(--fg)', border: '1px solid var(--border)' },
+    ghost: { background: 'transparent', color: 'var(--fg)' },
+    danger: { background: 'var(--danger)', color: '#fff' },
+  };
+  const sizes = { sm: { height: 32, padding: '0 12px', fontSize: 13 }, md: { height: 40, padding: '0 16px', fontSize: 14 }, lg: { height: 48, padding: '0 24px', fontSize: 15 } };
+  return (
+    <button className={className} style={{ ...variants[variant], ...sizes[size], display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 10, fontWeight: 500, border: variants[variant].border || 'none', transition: 'opacity .15s' }} {...props}>
+      {children}
+    </button>
+  );
+}
+function Card({ children, style = {}, className = '' }) {
+  return <div className={className} style={{ borderRadius: 14, border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: '0 8px 24px -12px rgba(0,0,0,0.5)', ...style }}>{children}</div>;
+}
+function Badge({ tone = 'neutral', children }) {
+  const tones = {
+    neutral: { background: 'var(--surface2)', color: 'var(--muted)', border: '1px solid var(--border)' },
+    success: { background: 'rgba(34,199,169,0.1)', color: 'var(--accent)', border: '1px solid rgba(34,199,169,0.3)' },
+    warning: { background: 'rgba(232,163,61,0.1)', color: 'var(--warning)', border: '1px solid rgba(232,163,61,0.3)' },
+    danger: { background: 'rgba(229,83,75,0.1)', color: 'var(--danger)', border: '1px solid rgba(229,83,75,0.3)' },
+    info: { background: 'rgba(62,124,255,0.1)', color: 'var(--primary)', border: '1px solid rgba(62,124,255,0.3)' },
+  };
+  return <span style={{ ...tones[tone], display: 'inline-flex', alignItems: 'center', borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 500 }}>{children}</span>;
+}
+function Progress({ value, tone = 'primary' }) {
+  const colors = { primary: 'var(--primary)', accent: 'var(--accent)', warning: 'var(--warning)', danger: 'var(--danger)' };
+  return (
+    <div style={{ height: 8, width: '100%', borderRadius: 999, background: 'var(--surface2)', overflow: 'hidden' }}>
+      <div style={{ height: '100%', width: Math.max(0, Math.min(100, value)) + '%', background: colors[tone], transition: 'width .2s' }} />
+    </div>
+  );
+}
+function Input(props) {
+  return <input {...props} style={{ height: 40, width: '100%', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--fg)', padding: '0 12px', fontSize: 14, ...(props.style || {}) }} />;
+}
+function Select({ children, ...props }) {
+  return <select {...props} style={{ height: 40, width: '100%', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--fg)', padding: '0 12px', fontSize: 14, ...(props.style || {}) }}>{children}</select>;
+}
+function Label({ children }) {
+  return <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 500, color: 'var(--muted)' }}>{children}</label>;
+}
+function Dialog({ open, onClose, title, children }) {
+  if (!open) return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }} />
+      <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'calc(100% - 32px)', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto', borderRadius: 14, border: '1px solid var(--border)', background: 'var(--surface)', padding: 20, boxShadow: '0 8px 24px -12px rgba(0,0,0,0.5)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{title}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', padding: 4, borderRadius: 8 }}><Icon name="x" size={18} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+function StatCard({ label, value, tone = 'default', hint }) {
+  const colors = { default: 'var(--fg)', positive: 'var(--accent)', negative: 'var(--danger)', accent: 'var(--primary)' };
+  return (
+    <Card style={{ padding: 16 }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--muted)' }}>{label}</div>
+      <div className="mono" style={{ marginTop: 8, fontSize: 22, fontWeight: 600, color: colors[tone] }}>{fmt(value)}</div>
+      {hint && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--muted)' }}>{hint}</div>}
+    </Card>
+  );
+}
+function SimpleBarChart({ data, keys, colors, height = 220 }) {
+  const max = Math.max(1, ...data.flatMap(d => keys.map(k => d[k] || 0)));
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height, padding: '0 4px' }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: height - 28, width: '100%', justifyContent: 'center' }}>
+            {keys.map((k, ki) => (
+              <div key={k} title={fmt(d[k])} style={{ width: 10, borderRadius: '3px 3px 0 0', height: Math.max(2, ((d[k] || 0) / max) * (height - 28)), background: colors[ki] }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{d.month}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+function SimpleLineChart({ data, dataKey, height = 220, color = '#3e7cff' }) {
+  const values = data.map(d => d[dataKey] || 0);
+  const min = Math.min(...values, 0), max = Math.max(...values, 1);
+  const range = max - min || 1;
+  const w = 100, h = height - 24;
+  const points = values.map((v, i) => {
+    const x = (i / Math.max(values.length - 1, 1)) * w;
+    const y = h - ((v - min) / range) * h;
+    return x + ',' + y;
+  }).join(' ');
+  return (
+    <div style={{ height }}>
+      <svg viewBox={'0 0 ' + w + ' ' + h} preserveAspectRatio="none" style={{ width: '100%', height: h }}>
+        <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+        {data.map((d, i) => <span key={i} style={{ fontSize: 11, color: 'var(--muted)' }}>{d.month}</span>)}
+      </div>
+    </div>
+  );
+}
+function DonutChart({ items, size = 160 }) {
+  const total = items.reduce((s, i) => s + i.value, 0) || 1;
+  let acc = 0;
+  const r = 45, cx = 60, cy = 60, stroke = 16;
+  const circumference = 2 * Math.PI * r;
+  return (
+    <svg viewBox="0 0 120 120" style={{ width: size, height: size }}>
+      {items.map((it, idx) => {
+        const frac = it.value / total;
+        const dash = frac * circumference;
+        const el = <circle key={idx} cx={cx} cy={cy} r={r} fill="none" stroke={it.color} strokeWidth={stroke}
+          strokeDasharray={dash + ' ' + (circumference - dash)} strokeDashoffset={-acc}
+          transform={'rotate(-90 ' + cx + ' ' + cy + ')'} />;
+        acc += dash;
+        return el;
+      })}
+    </svg>
+  );
+}
+
+/* ============================== APP ============================== */
+function App() {
+  const [db, setDb] = useState(loadDb);
+  const [authed, setAuthed] = useState(() => !!loadDb().profile.fullName);
+  const [onboarding, setOnboarding] = useState(() => authed && !loadDb().profile.onboardingDone);
+  const [page, setPage] = useState('dashboard');
+  const [activeWs, setActiveWs] = useState(() => db.workspaces.find(w => w.type === 'pessoal').id);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const [canISpendOpen, setCanISpendOpen] = useState(false);
+  const [alertsOpen, setAlertsOpen] = useState(false);
+
+  useEffect(() => { saveDb(db); }, [db]);
+
+  function patch(collection, updater) {
+    setDb(prev => ({ ...prev, [collection]: updater(prev[collection]) }));
+  }
+  function insert(collection, row) { patch(collection, arr => [...arr, row]); }
+  function remove(collection, id) { patch(collection, arr => arr.filter(r => r.id !== id)); }
+
+  const workspace = db.workspaces.find(w => w.id === activeWs) || db.workspaces[0];
+  const byWs = (arr) => arr.filter(r => r.workspaceId === workspace.id);
+
+  if (!authed) return <Login onEnter={(name) => {
+    setDb(prev => { const next = { ...prev, profile: { ...prev.profile, fullName: name } }; saveDb(next); return next; });
+    setAuthed(true);
+    setOnboarding(true);
+  }} />;
+
+  if (onboarding) return <Onboarding onFinish={() => {
+    patch('profile', () => ({ ...db.profile, onboardingDone: true }));
+    setOnboarding(false);
+  }} />;
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { id: 'transactions', label: 'Transações', icon: 'tx' },
+    { id: 'accounts', label: 'Contas', icon: 'wallet' },
+    { id: 'cards', label: 'Cartões', icon: 'card' },
+    { id: 'goals', label: 'Metas', icon: 'target' },
+    { id: 'investments', label: 'Investimentos', icon: 'trend' },
+    { id: 'business', label: 'Empresa', icon: 'building' },
+    { id: 'reports', label: 'Relatórios', icon: 'report' },
+    { id: 'help', label: 'Ajuda', icon: 'help' },
+    { id: 'settings', label: 'Configurações', icon: 'settings' },
+  ];
+  const mobileNav = navItems.slice(0, 4);
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      {/* Sidebar desktop */}
+      <aside className="desktop-only" style={{ position: 'fixed', insetBlock: 0, left: 0, width: 240, borderRight: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 64, padding: '0 20px' }}>
+          <div className="mono" style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>CFO</div>
+          <span style={{ fontWeight: 600, fontSize: 17 }}>Meu CFO</span>
+        </div>
+        <div style={{ padding: '0 12px 8px' }}>
+          <WorkspaceSwitch db={db} activeWs={activeWs} setActiveWs={setActiveWs} />
+        </div>
+        <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setPage(item.id)} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 10, border: 'none', textAlign: 'left',
+              background: page === item.id ? 'rgba(62,124,255,0.15)' : 'transparent', color: page === item.id ? 'var(--primary)' : 'var(--muted)', fontSize: 14, fontWeight: 500,
+            }}>
+              <Icon name={item.icon} size={18} /> {item.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Top bar mobile */}
+      <header className="mobile-only" style={{ position: 'sticky', top: 0, zIndex: 20, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <button onClick={() => setMobileMenu(v => !v)} style={{ background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="menu" size={22} /></button>
+        <span style={{ fontWeight: 600 }}>Meu CFO</span>
+        <AlertsBell db={db} workspace={workspace} open={alertsOpen} setOpen={setAlertsOpen} />
+      </header>
+
+      {mobileMenu && (
+        <div className="mobile-only" style={{ position: 'fixed', inset: 0, zIndex: 30, background: 'rgba(11,18,32,0.98)', padding: 16 }}>
+          <div style={{ marginBottom: 16 }}><WorkspaceSwitch db={db} activeWs={activeWs} setActiveWs={setActiveWs} /></div>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {navItems.map(item => (
+              <button key={item.id} onClick={() => { setPage(item.id); setMobileMenu(false); }} style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '12px', borderRadius: 10, border: 'none', textAlign: 'left',
+                background: page === item.id ? 'rgba(62,124,255,0.15)' : 'transparent', color: page === item.id ? 'var(--primary)' : 'var(--muted)', fontSize: 14, fontWeight: 500,
+              }}>
+                <Icon name={item.icon} size={18} /> {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
+
+      <div className="desktop-only" style={{ marginLeft: 240, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 24px', borderBottom: '1px solid var(--border)' }}>
+        <AlertsBell db={db} workspace={workspace} open={alertsOpen} setOpen={setAlertsOpen} />
+      </div>
+
+      <main className="content" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px 96px' }}>
+        {page === 'dashboard' && <Dashboard db={db} workspace={workspace} byWs={byWs} openCanISpend={() => setCanISpendOpen(true)} />}
+        {page === 'transactions' && <Transactions db={db} workspace={workspace} byWs={byWs} insert={insert} remove={remove} />}
+        {page === 'accounts' && <Accounts db={db} workspace={workspace} byWs={byWs} insert={insert} remove={remove} />}
+        {page === 'cards' && <Cards db={db} workspace={workspace} byWs={byWs} insert={insert} remove={remove} />}
+        {page === 'goals' && <Goals db={db} workspace={workspace} byWs={byWs} insert={insert} remove={remove} />}
+        {page === 'investments' && <Investments db={db} workspace={workspace} byWs={byWs} insert={insert} remove={remove} />}
+        {page === 'business' && <Business db={db} setDb={setDb} activeWs={activeWs} setActiveWs={setActiveWs} setPage={setPage} />}
+        {page === 'reports' && <Reports db={db} workspace={workspace} byWs={byWs} />}
+        {page === 'help' && <Help onReopenOnboarding={() => setOnboarding(true)} />}
+        {page === 'settings' && <Settings db={db} setDb={setDb} onReset={() => { const fresh = seedData(); fresh.profile.fullName = db.profile.fullName; fresh.profile.onboardingDone = true; setDb(fresh); }} onSignOut={() => { setAuthed(false); }} />}
+      </main>
+
+      {/* Bottom nav mobile */}
+      <nav className="mobile-only" style={{ position: 'fixed', insetInline: 0, bottom: 0, zIndex: 20, height: 64, display: 'flex', borderTop: '1px solid var(--border)', background: 'var(--surface)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        {mobileNav.map(item => (
+          <button key={item.id} onClick={() => setPage(item.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, border: 'none', background: 'none', color: page === item.id ? 'var(--primary)' : 'var(--muted)', fontSize: 11 }}>
+            <Icon name={item.icon} size={20} /> {item.label}
+          </button>
+        ))}
+      </nav>
+
+      <CanISpendDialog open={canISpendOpen} onClose={() => setCanISpendOpen(false)} db={db} workspace={workspace} byWs={byWs} />
+
+      <style>{`
+        .desktop-only { display: none; }
+        .mobile-only { display: block; }
+        @media (min-width: 768px) {
+          .desktop-only { display: flex; }
+          .mobile-only { display: none; }
+          .content { margin-left: 240px; max-width: 900px; margin-right: auto; padding: 32px !important; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ============================== LOGIN / ONBOARDING ============================== */
+function Login({ onEnter }) {
+  const [name, setName] = useState('');
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 360 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div className="mono" style={{ width: 48, height: 48, margin: '0 auto 12px', borderRadius: 12, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16 }}>CFO</div>
+          <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>Meu CFO</h1>
+          <p style={{ marginTop: 4, fontSize: 14, color: 'var(--muted)' }}>Seu controle financeiro pessoal e empresarial em um só lugar.</p>
+        </div>
+        <Card style={{ padding: 20 }}>
+          <div style={{ marginBottom: 16, borderRadius: 10, border: '1px solid rgba(62,124,255,0.3)', background: 'rgba(62,124,255,0.1)', padding: '8px 12px', fontSize: 12, color: 'var(--primary)' }}>
+            Tudo o que você cadastrar fica salvo neste navegador, pronto para você usar do seu jeito.
+          </div>
+          <Label>Como podemos te chamar?</Label>
+          <Input value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" onKeyDown={e => e.key === 'Enter' && name.trim() && onEnter(name.trim())} autoFocus />
+          <Button className="mono" style={{ width: '100%', marginTop: 16 }} disabled={!name.trim()} onClick={() => onEnter(name.trim())}>Entrar</Button>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+const ONBOARDING_STEPS = [
+  { title: 'Bem-vindo ao Meu CFO', body: 'Pense no Meu CFO como um CFO digital: ele organiza seu dinheiro, contas, cartões e metas para te mostrar, a qualquer momento, quanto você realmente pode gastar.', icon: 'wallet' },
+  { title: 'Organize seu dinheiro', body: 'Nem todo real na conta está livre. Separamos o saldo em: dinheiro comprometido, dinheiro reservado (metas) e dinheiro livre (o que sobra).', icon: 'trend' },
+  { title: 'Cadastre suas contas', body: 'Adicione contas bancárias, poupança e dinheiro em espécie. É a partir delas que calculamos seu patrimônio.', icon: 'wallet' },
+  { title: 'Cadastre receitas e despesas', body: 'Registre o que entra e o que sai. Cada lançamento entra automaticamente nos seus relatórios.', icon: 'tx' },
+  { title: 'Crie suas metas', body: 'Defina valor e prazo. O sistema calcula quanto guardar por mês para chegar lá.', icon: 'target' },
+  { title: 'Controle seus cartões', body: 'Cadastre limite, fechamento e vencimento. Compras parceladas são distribuídas automaticamente nas faturas.', icon: 'card' },
+  { title: 'Use o "Posso Gastar?"', body: 'Antes de uma compra, veja o impacto real no seu saldo seguro e nas metas — sem ninguém decidir por você.', icon: 'question' },
+  { title: 'Modo Empresa', body: 'Empresas têm outra lógica: fluxo de caixa, contas a pagar e a receber, custos e lucro — separado do seu dinheiro pessoal.', icon: 'building' },
+];
+function Onboarding({ onFinish }) {
+  const [i, setI] = useState(0);
+  const step = ONBOARDING_STEPS[i];
+  const isLast = i === ONBOARDING_STEPS.length - 1;
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 420 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 24 }}>
+          {ONBOARDING_STEPS.map((_, idx) => <div key={idx} style={{ height: 6, width: 24, borderRadius: 999, background: idx <= i ? 'var(--primary)' : 'var(--surface2)' }} />)}
+        </div>
+        <Card style={{ padding: 24 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(62,124,255,0.15)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name={step.icon} size={22} /></div>
+          <h2 style={{ fontSize: 19, fontWeight: 600, margin: 0 }}>{step.title}</h2>
+          <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.6, color: 'var(--muted)' }}>{step.body}</p>
+          <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button onClick={onFinish} style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 12 }}>Pular tutorial</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {i > 0 && <Button variant="secondary" size="sm" onClick={() => setI(i - 1)}><Icon name="arrowLeft" size={16} /> Voltar</Button>}
+              {isLast ? <Button size="sm" onClick={onFinish}>Começar a usar</Button> : <Button size="sm" onClick={() => setI(i + 1)}>Avançar <Icon name="arrowRight" size={16} /></Button>}
+            </div>
+          </div>
+        </Card>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--muted)', marginTop: 16 }}>Você pode reabrir este tutorial a qualquer momento em "Ajuda".</p>
+      </div>
+    </div>
+  );
+}
+
+/* ============================== SHARED WIDGETS ============================== */
+function WorkspaceSwitch({ db, activeWs, setActiveWs }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>
+        <Icon name={db.workspaces.find(w => w.id === activeWs)?.type === 'pessoal' ? 'user' : 'building'} size={15} />
+      </div>
+      <Select value={activeWs} onChange={e => setActiveWs(e.target.value)} style={{ paddingLeft: 34 }}>
+        {db.workspaces.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+      </Select>
+    </div>
+  );
+}
+function generateAlerts(db, workspace) {
+  const alerts = [];
+  const now = new Date();
+  const inNext = (dateStr, days) => { const d = new Date(dateStr); const lim = new Date(now); lim.setDate(lim.getDate() + days); return d >= now && d <= lim; };
+  const tx = db.transactions.filter(t => t.workspaceId === workspace.id);
+  tx.filter(t => t.kind === 'despesa' && t.status === 'pendente' && inNext(t.date, 5)).forEach(t => alerts.push('"' + t.description + '" vence em breve, no valor de ' + fmt(t.amount) + '.'));
+  tx.filter(t => t.kind === 'despesa' && t.status === 'atrasado').forEach(t => alerts.push('"' + t.description + '" está com o pagamento em atraso.'));
+  const cards = db.cards.filter(c => c.workspaceId === workspace.id);
+  const cm = monthKey(now);
+  cards.forEach(card => {
+    const used = cardLimitUsed(card.id, db.cardTransactions, card, cm);
+    const pct = card.limit > 0 ? (used / card.limit) * 100 : 0;
+    if (pct >= 80) alerts.push('O cartão "' + card.name + '" já está usando ' + Math.round(pct) + '% do limite disponível.');
+  });
+  db.goals.filter(g => g.workspaceId === workspace.id && new Date(g.deadline) < now && g.currentAmount < g.targetAmount).forEach(g => alerts.push('A meta "' + g.name + '" passou do prazo e ainda não foi concluída.'));
+  const receivables = db.receivables.filter(r => r.workspaceId === workspace.id);
+  receivables.filter(r => r.status === 'atrasado').forEach(r => alerts.push('O recebimento "' + r.description + '" está em atraso.'));
+  const payables = db.payables.filter(p => p.workspaceId === workspace.id);
+  payables.filter(p => p.status === 'pendente' && inNext(p.dueDate, 5)).forEach(p => alerts.push('O pagamento a "' + p.description + '" vence nos próximos dias.'));
+  return alerts;
+}
+function AlertsBell({ db, workspace, open, setOpen }) {
+  const alerts = generateAlerts(db, workspace);
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(!open)} style={{ position: 'relative', background: 'none', border: 'none', color: 'var(--muted)', padding: 8, borderRadius: 999 }}>
+        <Icon name="bell" size={20} />
+        {alerts.length > 0 && <span style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: 999, background: 'var(--warning)' }} />}
+      </button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 10 }} />
+          <div style={{ position: 'absolute', right: 0, zIndex: 20, marginTop: 8, width: 300, borderRadius: 14, border: '1px solid var(--border)', background: 'var(--surface)', padding: 8, boxShadow: '0 8px 24px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ padding: '6px 8px', fontSize: 12, fontWeight: 500, color: 'var(--muted)' }}>Alertas</div>
+            {alerts.length === 0 ? <div style={{ padding: '24px 8px', textAlign: 'center', fontSize: 13, color: 'var(--muted)' }}>Nenhum alerta no momento.</div> :
+              <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                {alerts.map((a, i) => <div key={i} style={{ padding: '8px', borderRadius: 8, fontSize: 13 }}>{a}</div>)}
+              </div>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function computeSnapshot(db, workspace, byWs) {
+  const accounts = byWs(db.accounts);
+  const transactions = byWs(db.transactions);
+  const goals = byWs(db.goals);
+  const investments = byWs(db.investments);
+  const cards = byWs(db.cards);
+  const cardTx = db.cardTransactions.filter(ct => cards.some(c => c.id === ct.cardId));
+  const cm = monthKey(new Date());
+  const cardInvoicesTotal = cards.reduce((s, c) => s + cardInvoiceTotal(c.id, cm, cardTx, c), 0);
+  const availableBalance = sumAccountBalances(accounts);
+  const committed = calcCommitted(transactions, cardInvoicesTotal);
+  const reserved = calcReserved(goals);
+  const freeMoney = calcFreeMoney(availableBalance, committed, reserved);
+  const safeBalance = calcSafeBalance(availableBalance, transactions);
+  const netWorth = calcNetWorth(accounts, investments);
+  return { netWorth, availableBalance, committed, reserved, freeMoney, safeBalance };
+}
+
+function CanISpendDialog({ open, onClose, db, workspace, byWs }) {
+  const [amountInput, setAmountInput] = useState('');
+  const snapshot = computeSnapshot(db, workspace, byWs);
+  const amount = Number(amountInput.replace(',', '.')) || 0;
+  const result = amount > 0 ? canISpend(amount, snapshot, byWs(db.goals).length > 0) : null;
+  return (
+    <Dialog open={open} onClose={onClose} title="Posso gastar?">
+      <Label>Quanto você quer gastar?</Label>
+      <Input inputMode="decimal" placeholder="R$ 0,00" value={amountInput} onChange={e => setAmountInput(e.target.value)} autoFocus />
+      {result && (
+        <div style={{ marginTop: 16, borderRadius: 10, border: '1px solid var(--border)', background: 'var(--surface2)', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <Row label="Saldo seguro antes" value={fmt(result.safeBefore)} />
+          <Row label="Compra" value={fmt(result.amount)} />
+          <div style={{ height: 1, background: 'var(--border)' }} />
+          <Row label="Saldo seguro depois" value={fmt(result.safeAfter)} bold color={result.safeAfter < 0 ? 'var(--danger)' : 'var(--accent)'} />
+          <Row label="Dinheiro livre depois" value={fmt(result.freeAfter)} bold color={result.freeAfter < 0 ? 'var(--danger)' : 'var(--fg)'} />
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>{result.message}</p>
+        </div>
+      )}
+      <Button variant="secondary" style={{ width: '100%', marginTop: 16 }} onClick={onClose}>Fechar</Button>
+    </Dialog>
+  );
+}
+function Row({ label, value, bold, color }) {
+  return <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: bold ? 600 : 400 }}><span style={{ color: 'var(--muted)' }}>{label}</span><span className="mono" style={{ color: color || 'inherit' }}>{value}</span></div>;
+}
+
+/* ============================== DASHBOARD ============================== */
+function Dashboard({ db, workspace, byWs, openCanISpend }) {
+  const accounts = byWs(db.accounts), transactions = byWs(db.transactions), goals = byWs(db.goals);
+  const snapshot = computeSnapshot(db, workspace, byWs);
+  const now = new Date();
+  const monthlyIncome = sumByKindInMonth(transactions, 'receita', now);
+  const monthlyExpenses = sumByKindInMonth(transactions, 'despesa', now);
+  const saved = monthlyIncome - monthlyExpenses;
+  const upcoming = transactions.filter(t => t.status === 'pendente').sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
+
+  const chartData = [];
+  for (let i = 5; i >= 0; i--) {
+    const ref = new Date(); ref.setMonth(ref.getMonth() - i);
+    chartData.push({ month: ref.toLocaleDateString('pt-BR', { month: 'short' }), receitas: sumByKindInMonth(transactions, 'receita', ref), despesas: sumByKindInMonth(transactions, 'despesa', ref) });
+  }
+  const netWorthSeries = [];
+  let running = snapshot.netWorth - saved * 5;
+  for (let i = 5; i >= 0; i--) {
+    const ref = new Date(); ref.setMonth(ref.getMonth() - i);
+    if (i !== 5) running += sumByKindInMonth(transactions, 'receita', ref) - sumByKindInMonth(transactions, 'despesa', ref);
+    netWorthSeries.push({ month: ref.toLocaleDateString('pt-BR', { month: 'short' }), patrimonio: Math.max(running, 0) });
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Dashboard</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Visão geral do ambiente {workspace.name}.</p>
+        </div>
+        <Button onClick={openCanISpend}><Icon name="question" size={18} /> Posso gastar?</Button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }} className="stat-grid">
+        <StatCard label="Patrimônio" value={snapshot.netWorth} />
+        <StatCard label="Saldo disponível" value={snapshot.availableBalance} />
+        <StatCard label="Comprometido" value={snapshot.committed} tone="negative" />
+        <StatCard label="Reservado (metas)" value={snapshot.reserved} tone="accent" />
+        <StatCard label="Dinheiro livre" value={snapshot.freeMoney} tone="positive" />
+        <StatCard label="Saldo seguro" value={snapshot.safeBalance} hint="próximos 15 dias" tone={snapshot.safeBalance < 0 ? 'negative' : 'default'} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }} className="stat-grid-3">
+        <StatCard label="Receitas do mês" value={monthlyIncome} tone="positive" />
+        <StatCard label="Despesas do mês" value={monthlyExpenses} tone="negative" />
+        <StatCard label="Economizado no mês" value={saved} tone={saved >= 0 ? 'positive' : 'negative'} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="two-col">
+        <Card style={{ padding: 16 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Receitas x despesas (6 meses)</p>
+          <SimpleBarChart data={chartData} keys={['receitas', 'despesas']} colors={['#22c7a9', '#e5534b']} />
+        </Card>
+        <Card style={{ padding: 16 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Evolução patrimonial</p>
+          <SimpleLineChart data={netWorthSeries} dataKey="patrimonio" />
+        </Card>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="two-col-uneven">
+        <Card style={{ padding: 16 }}>
+          <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Próximos vencimentos</p>
+          {upcoming.length === 0 && <p style={{ textAlign: 'center', padding: '24px 0', fontSize: 13, color: 'var(--muted)' }}>Nenhum vencimento pendente.</p>}
+          {upcoming.map(t => (
+            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 4px' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{t.description}</p>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{new Date(t.date).toLocaleDateString('pt-BR')}</p>
+              </div>
+              <span className="mono" style={{ fontSize: 14, color: 'var(--danger)' }}>{fmt(t.amount)}</span>
+            </div>
+          ))}
+        </Card>
+        <Card style={{ padding: 16 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Metas</p>
+          {goals.slice(0, 3).map(g => {
+            const p = goalProgress(g);
+            return (
+              <div key={g.id} style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 14 }}>
+                  <span style={{ fontWeight: 500 }}>{g.name}</span>
+                  <Badge tone={p.percent >= 100 ? 'success' : 'info'}>{Math.round(p.percent)}%</Badge>
+                </div>
+                <Progress value={p.percent} />
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--muted)' }}>{fmt(g.currentAmount)} de {fmt(g.targetAmount)}</p>
+              </div>
+            );
+          })}
+          {goals.length === 0 && <p style={{ fontSize: 13, color: 'var(--muted)' }}>Nenhuma meta criada ainda.</p>}
+        </Card>
+      </div>
+
+      <style>{`
+        @media (min-width: 640px) { .stat-grid { grid-template-columns: repeat(3,1fr) !important; } }
+        @media (min-width: 1024px) { .stat-grid { grid-template-columns: repeat(6,1fr) !important; } .two-col { grid-template-columns: 1fr 1fr !important; } .two-col-uneven { grid-template-columns: 2fr 1fr !important; } }
+      `}</style>
+    </div>
+  );
+}
+
+/* ============================== TRANSACTIONS ============================== */
+const STATUS_LABEL = { concluido: 'Concluído', pago: 'Pago', pendente: 'Pendente', atrasado: 'Atrasado' };
+const STATUS_TONE = { concluido: 'success', pago: 'success', pendente: 'warning', atrasado: 'danger' };
+function Transactions({ db, workspace, byWs, insert, remove }) {
+  const transactions = byWs(db.transactions), categories = byWs(db.categories), accounts = byWs(db.accounts);
+  const [filterKind, setFilterKind] = useState('todas');
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState('despesa');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [date, setDate] = useState(todayIso());
+  const [status, setStatus] = useState('pago');
+
+  const filtered = transactions.filter(t => filterKind === 'todas' || t.kind === filterKind).sort((a, b) => b.date.localeCompare(a.date));
+  function categoryName(id) { return categories.find(c => c.id === id)?.name || '—'; }
+  function handleSave() {
+    if (!description.trim() || !amount) return;
+    insert('transactions', { id: uid('t'), workspaceId: workspace.id, categoryId: categoryId || categories.find(c => c.kind === kind)?.id || '', kind, description: description.trim(), amount: Number(amount.replace(',', '.')) || 0, date, status });
+    setDescription(''); setAmount(''); setOpen(false);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Transações</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Receitas e despesas de {workspace.name}.</p>
+        </div>
+        <Button onClick={() => setOpen(true)}><Icon name="plus" size={18} /> Nova transação</Button>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {['todas', 'receita', 'despesa'].map(k => (
+          <button key={k} onClick={() => setFilterKind(k)} style={{ borderRadius: 999, padding: '6px 14px', fontSize: 13, fontWeight: 500, border: 'none', textTransform: 'capitalize', background: filterKind === k ? 'var(--primary)' : 'var(--surface2)', color: filterKind === k ? '#fff' : 'var(--muted)' }}>{k}</button>
+        ))}
+      </div>
+      <Card>
+        {filtered.map(t => (
+          <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div><p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{t.description}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{categoryName(t.categoryId)} · {new Date(t.date).toLocaleDateString('pt-BR')}</p></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
+              <span className="mono" style={{ fontSize: 14, fontWeight: 500, color: t.kind === 'receita' ? 'var(--accent)' : 'var(--danger)' }}>{t.kind === 'receita' ? '+' : '-'} {fmt(t.amount)}</span>
+              <button onClick={() => remove('transactions', t.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="trash" size={16} /></button>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhuma transação encontrada.</p>}
+      </Card>
+
+      <Dialog open={open} onClose={() => setOpen(false)} title="Nova transação">
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {['despesa', 'receita'].map(k => <button key={k} onClick={() => setKind(k)} style={{ flex: 1, padding: '8px 0', borderRadius: 10, border: 'none', fontSize: 14, fontWeight: 500, textTransform: 'capitalize', background: kind === k ? 'var(--primary)' : 'var(--surface2)', color: kind === k ? '#fff' : 'var(--muted)' }}>{k}</button>)}
+        </div>
+        <Label>Descrição</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Supermercado" style={{ marginBottom: 12 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <div><Label>Valor</Label><Input inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0,00" /></div>
+          <div><Label>Data</Label><Input type="date" value={date} onChange={e => setDate(e.target.value)} /></div>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <Label>Categoria</Label>
+          <Select value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+            <option value="">Selecionar</option>
+            {categories.filter(c => c.kind === kind).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </Select>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <Label>Status</Label>
+          <Select value={status} onChange={e => setStatus(e.target.value)}>
+            <option value="pago">Pago</option><option value="pendente">Pendente</option><option value="atrasado">Atrasado</option><option value="concluido">Concluído</option>
+          </Select>
+        </div>
+        <Button style={{ width: '100%' }} onClick={handleSave}>Salvar transação</Button>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ============================== ACCOUNTS ============================== */
+const ACC_TYPE_LABEL = { corrente: 'Conta corrente', poupanca: 'Poupança', dinheiro: 'Dinheiro em espécie', investimento: 'Investimento' };
+const ACC_TYPE_ICON = { corrente: 'wallet', poupanca: 'trend', dinheiro: 'wallet', investimento: 'trend' };
+function Accounts({ db, workspace, byWs, insert, remove }) {
+  const accounts = byWs(db.accounts);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [type, setType] = useState('corrente');
+  const [balance, setBalance] = useState('');
+  const total = accounts.filter(a => !a.archived).reduce((s, a) => s + a.balance, 0);
+
+  function handleSave() {
+    if (!name.trim()) return;
+    insert('accounts', { id: uid('acc'), workspaceId: workspace.id, name: name.trim(), type, balance: Number(balance.replace(',', '.')) || 0 });
+    setName(''); setBalance(''); setOpen(false);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Contas</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Saldo total: <span className="mono" style={{ color: 'var(--fg)' }}>{fmt(total)}</span></p>
+        </div>
+        <Button onClick={() => setOpen(true)}><Icon name="plus" size={18} /> Nova conta</Button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="acc-grid">
+        {accounts.map(account => (
+          <Card key={account.id} style={{ padding: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(62,124,255,0.15)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={ACC_TYPE_ICON[account.type]} size={18} /></div>
+                <div><p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{account.name}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{ACC_TYPE_LABEL[account.type]}</p></div>
+              </div>
+              <button onClick={() => remove('accounts', account.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="trash" size={16} /></button>
+            </div>
+            <p className="mono" style={{ marginTop: 16, fontSize: 20, fontWeight: 600 }}>{fmt(account.balance)}</p>
+          </Card>
+        ))}
+        {accounts.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhuma conta cadastrada ainda.</p>}
+      </div>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Nova conta">
+        <Label>Nome</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Conta corrente Itaú" style={{ marginBottom: 12 }} />
+        <Label>Tipo</Label>
+        <Select value={type} onChange={e => setType(e.target.value)} style={{ marginBottom: 12 }}>
+          {Object.entries(ACC_TYPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </Select>
+        <Label>Saldo atual</Label><Input inputMode="decimal" value={balance} onChange={e => setBalance(e.target.value)} placeholder="0,00" style={{ marginBottom: 16 }} />
+        <Button style={{ width: '100%' }} onClick={handleSave}>Salvar conta</Button>
+      </Dialog>
+      <style>{`@media (min-width: 640px) { .acc-grid { grid-template-columns: repeat(2,1fr) !important; } } @media (min-width: 1024px) { .acc-grid { grid-template-columns: repeat(3,1fr) !important; } }`}</style>
+    </div>
+  );
+}
+
+/* ============================== CARDS ============================== */
+function Cards({ db, workspace, byWs, insert, remove }) {
+  const cards = byWs(db.cards);
+  const allCardTx = db.cardTransactions;
+  const categories = byWs(db.categories);
+  const [cardDialogOpen, setCardDialogOpen] = useState(false);
+  const [purchaseFor, setPurchaseFor] = useState(null);
+
+  const [cardName, setCardName] = useState('');
+  const [limit, setLimit] = useState('');
+  const [closingDay, setClosingDay] = useState('20');
+  const [dueDay, setDueDay] = useState('28');
+
+  const [pDesc, setPDesc] = useState('');
+  const [pAmount, setPAmount] = useState('');
+  const [pInstallments, setPInstallments] = useState('1');
+  const [pDate, setPDate] = useState(todayIso());
+  const [pCategory, setPCategory] = useState('');
+
+  const cm = monthKey(new Date());
+
+  function saveCard() {
+    if (!cardName.trim()) return;
+    insert('cards', { id: uid('card'), workspaceId: workspace.id, name: cardName.trim(), limit: Number(limit.replace(',', '.')) || 0, closingDay: Number(closingDay) || 20, dueDay: Number(dueDay) || 28 });
+    setCardName(''); setLimit(''); setCardDialogOpen(false);
+  }
+  function savePurchase(cardId) {
+    if (!pDesc.trim() || !pAmount) return;
+    insert('cardTransactions', { id: uid('ct'), cardId, description: pDesc.trim(), amount: Number(pAmount.replace(',', '.')) || 0, date: pDate, installments: Number(pInstallments) || 1, categoryId: pCategory || (categories[0] && categories[0].id) || '' });
+    setPDesc(''); setPAmount(''); setPInstallments('1'); setPurchaseFor(null);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Cartões</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Limites, faturas e compras parceladas.</p></div>
+        <Button onClick={() => setCardDialogOpen(true)}><Icon name="plus" size={18} /> Novo cartão</Button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="cards-grid">
+        {cards.map(card => {
+          const cardTx = allCardTx.filter(ct => ct.cardId === card.id);
+          const used = cardLimitUsed(card.id, cardTx, card, cm);
+          const available = Math.max(card.limit - used, 0);
+          const invoice = cardInvoiceTotal(card.id, cm, cardTx, card);
+          const pct = card.limit > 0 ? (used / card.limit) * 100 : 0;
+          return (
+            <Card key={card.id} style={{ padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(62,124,255,0.15)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="card" size={18} /></div>
+                <div><p style={{ margin: 0, fontWeight: 500 }}>{card.name}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Fecha dia {card.closingDay} · Vence dia {card.dueDay}</p></div>
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}><span style={{ color: 'var(--muted)' }}>Limite usado</span><span className="mono">{fmt(used)} de {fmt(card.limit)}</span></div>
+                <Progress value={pct} tone={pct >= 80 ? 'danger' : 'primary'} />
+              </div>
+              <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
+                <div style={{ borderRadius: 10, background: 'var(--surface2)', padding: 12 }}><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Limite disponível</p><p className="mono" style={{ margin: '2px 0 0', fontWeight: 500 }}>{fmt(available)}</p></div>
+                <div style={{ borderRadius: 10, background: 'var(--surface2)', padding: 12 }}><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Fatura atual</p><p className="mono" style={{ margin: '2px 0 0', fontWeight: 500 }}>{fmt(invoice)}</p></div>
+              </div>
+              <Button variant="secondary" size="sm" style={{ width: '100%', marginTop: 16 }} onClick={() => setPurchaseFor(card.id)}>Lançar compra</Button>
+              <Dialog open={purchaseFor === card.id} onClose={() => setPurchaseFor(null)} title={'Nova compra — ' + card.name}>
+                <Label>Descrição</Label><Input value={pDesc} onChange={e => setPDesc(e.target.value)} style={{ marginBottom: 12 }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
+                  <div><Label>Valor total</Label><Input inputMode="decimal" value={pAmount} onChange={e => setPAmount(e.target.value)} placeholder="0,00" /></div>
+                  <div><Label>Parcelas</Label><Input type="number" min="1" max="24" value={pInstallments} onChange={e => setPInstallments(e.target.value)} /></div>
+                </div>
+                {Number(pInstallments) > 1 && pAmount && <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>{pInstallments}x de {fmt((Number(pAmount.replace(',', '.')) || 0) / Number(pInstallments))}</p>}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div><Label>Data da compra</Label><Input type="date" value={pDate} onChange={e => setPDate(e.target.value)} /></div>
+                  <div><Label>Categoria</Label><Select value={pCategory} onChange={e => setPCategory(e.target.value)}><option value="">Selecionar</option>{categories.filter(c => c.kind === 'despesa').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></div>
+                </div>
+                <Button style={{ width: '100%' }} onClick={() => savePurchase(card.id)}>Salvar compra</Button>
+              </Dialog>
+            </Card>
+          );
+        })}
+        {cards.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhum cartão cadastrado ainda.</p>}
+      </div>
+      <Dialog open={cardDialogOpen} onClose={() => setCardDialogOpen(false)} title="Novo cartão">
+        <Label>Nome</Label><Input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Ex: Nubank" style={{ marginBottom: 12 }} />
+        <Label>Limite</Label><Input inputMode="decimal" value={limit} onChange={e => setLimit(e.target.value)} placeholder="0,00" style={{ marginBottom: 12 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div><Label>Dia de fechamento</Label><Input type="number" min="1" max="31" value={closingDay} onChange={e => setClosingDay(e.target.value)} /></div>
+          <div><Label>Dia de vencimento</Label><Input type="number" min="1" max="31" value={dueDay} onChange={e => setDueDay(e.target.value)} /></div>
+        </div>
+        <Button style={{ width: '100%' }} onClick={saveCard}>Salvar cartão</Button>
+      </Dialog>
+      <style>{`@media (min-width: 768px) { .cards-grid { grid-template-columns: repeat(2,1fr) !important; } }`}</style>
+    </div>
+  );
+}
+
+/* ============================== GOALS ============================== */
+const PRIORITY_TONE = { alta: 'danger', media: 'warning', baixa: 'neutral' };
+function Goals({ db, workspace, byWs, insert, remove }) {
+  const goals = byWs(db.goals);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [target, setTarget] = useState('');
+  const [current, setCurrent] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [priority, setPriority] = useState('media');
+
+  function handleSave() {
+    if (!name.trim() || !target || !deadline) return;
+    insert('goals', { id: uid('g'), workspaceId: workspace.id, name: name.trim(), targetAmount: Number(target.replace(',', '.')) || 0, currentAmount: Number(current.replace(',', '.')) || 0, deadline, priority });
+    setName(''); setTarget(''); setCurrent(''); setDeadline(''); setOpen(false);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Metas</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Separe dinheiro para seus objetivos com prazo definido.</p></div>
+        <Button onClick={() => setOpen(true)}><Icon name="plus" size={18} /> Nova meta</Button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="goals-grid">
+        {goals.map(goal => {
+          const p = goalProgress(goal);
+          return (
+            <Card key={goal.id} style={{ padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(34,199,169,0.15)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="target" size={18} /></div>
+                  <div><p style={{ margin: 0, fontWeight: 500 }}>{goal.name}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>até {new Date(goal.deadline).toLocaleDateString('pt-BR')}</p></div>
+                </div>
+                <button onClick={() => remove('goals', goal.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="trash" size={16} /></button>
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <Progress value={p.percent} tone="accent" />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 12, color: 'var(--muted)' }}><span>{fmt(goal.currentAmount)}</span><span>{fmt(goal.targetAmount)}</span></div>
+              </div>
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Badge tone={PRIORITY_TONE[goal.priority]}>Prioridade {goal.priority}</Badge>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>guardar ~{fmt(p.suggestedMonthly)}/mês</p>
+              </div>
+            </Card>
+          );
+        })}
+        {goals.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhuma meta criada ainda.</p>}
+      </div>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Nova meta">
+        <Label>Nome</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Reserva de emergência" style={{ marginBottom: 12 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <div><Label>Valor alvo</Label><Input inputMode="decimal" value={target} onChange={e => setTarget(e.target.value)} placeholder="0,00" /></div>
+          <div><Label>Já guardado</Label><Input inputMode="decimal" value={current} onChange={e => setCurrent(e.target.value)} placeholder="0,00" /></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div><Label>Prazo</Label><Input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} /></div>
+          <div><Label>Prioridade</Label><Select value={priority} onChange={e => setPriority(e.target.value)}><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></Select></div>
+        </div>
+        <Button style={{ width: '100%' }} onClick={handleSave}>Salvar meta</Button>
+      </Dialog>
+      <style>{`@media (min-width: 768px) { .goals-grid { grid-template-columns: repeat(2,1fr) !important; } }`}</style>
+    </div>
+  );
+}
+
+/* ============================== INVESTMENTS ============================== */
+const INV_TYPE_LABEL = { cdb: 'CDB', tesouro: 'Tesouro Direto', fii: 'FII', acoes: 'Ações', etf: 'ETF', fundos: 'Fundos', outros: 'Outros' };
+const PALETTE = ['#3e7cff', '#22c7a9', '#e8a33d', '#e5534b', '#8b98b3', '#8e6ff7'];
+function Investments({ db, workspace, byWs, insert, remove }) {
+  const investments = byWs(db.investments);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [type, setType] = useState('cdb');
+  const [invested, setInvested] = useState('');
+  const [current, setCurrent] = useState('');
+
+  const totalInvested = investments.reduce((s, i) => s + i.investedAmount, 0);
+  const totalCurrent = investments.reduce((s, i) => s + i.currentAmount, 0);
+  const profitability = totalInvested > 0 ? ((totalCurrent - totalInvested) / totalInvested) * 100 : 0;
+  const composition = investments.map((i, idx) => ({ name: INV_TYPE_LABEL[i.type], value: i.currentAmount, color: PALETTE[idx % PALETTE.length] }));
+
+  function handleSave() {
+    if (!name.trim()) return;
+    const inv = Number(invested.replace(',', '.')) || 0;
+    insert('investments', { id: uid('i'), workspaceId: workspace.id, name: name.trim(), type, investedAmount: inv, currentAmount: Number(current.replace(',', '.')) || inv });
+    setName(''); setInvested(''); setCurrent(''); setOpen(false);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Investimentos</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Carteira consolidada de {workspace.name}.</p></div>
+        <Button onClick={() => setOpen(true)}><Icon name="plus" size={18} /> Novo investimento</Button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+        <Card style={{ padding: 16 }}><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Valor investido</p><p className="mono" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 600 }}>{fmt(totalInvested)}</p></Card>
+        <Card style={{ padding: 16 }}><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Valor atual</p><p className="mono" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 600 }}>{fmt(totalCurrent)}</p></Card>
+        <Card style={{ padding: 16 }}><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Rentabilidade</p><p className="mono" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 600, color: profitability >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{profitability.toFixed(1)}%</p></Card>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="inv-grid">
+        <Card style={{ padding: 16, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)', alignSelf: 'flex-start' }}>Composição da carteira</p>
+          {composition.length > 0 ? <DonutChart items={composition} /> : <p style={{ fontSize: 13, color: 'var(--muted)', padding: '40px 0' }}>Sem dados ainda.</p>}
+          {composition.length > 0 && (
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+              {composition.map((c, i) => <span key={i} style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: 999, background: c.color, display: 'inline-block' }} />{c.name}</span>)}
+            </div>
+          )}
+        </Card>
+        <Card>
+          {investments.map(inv => {
+            const gain = inv.currentAmount - inv.investedAmount;
+            return (
+              <div key={inv.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(62,124,255,0.15)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="trend" size={16} /></div>
+                  <div><p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{inv.name}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{INV_TYPE_LABEL[inv.type]}</p></div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p className="mono" style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{fmt(inv.currentAmount)}</p>
+                  <p className="mono" style={{ margin: 0, fontSize: 12, color: gain >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{gain >= 0 ? '+' : ''}{fmt(gain)}</p>
+                </div>
+                <button onClick={() => remove('investments', inv.id)} style={{ marginLeft: 12, background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="trash" size={16} /></button>
+              </div>
+            );
+          })}
+          {investments.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhum investimento cadastrado.</p>}
+        </Card>
+      </div>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Novo investimento">
+        <Label>Nome</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Tesouro Selic 2029" style={{ marginBottom: 12 }} />
+        <Label>Tipo</Label><Select value={type} onChange={e => setType(e.target.value)} style={{ marginBottom: 12 }}>{Object.entries(INV_TYPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</Select>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div><Label>Valor investido</Label><Input inputMode="decimal" value={invested} onChange={e => setInvested(e.target.value)} placeholder="0,00" /></div>
+          <div><Label>Valor atual</Label><Input inputMode="decimal" value={current} onChange={e => setCurrent(e.target.value)} placeholder="0,00" /></div>
+        </div>
+        <Button style={{ width: '100%' }} onClick={handleSave}>Salvar investimento</Button>
+      </Dialog>
+      <style>{`@media (min-width: 900px) { .inv-grid { grid-template-columns: 1fr 2fr !important; } }`}</style>
+    </div>
+  );
+}
+
+/* ============================== BUSINESS ============================== */
+function Business({ db, setDb, activeWs, setActiveWs, setPage }) {
+  const [tab, setTab] = useState('overview');
+  const businesses = db.workspaces.filter(w => w.type === 'empresarial');
+  const active = db.workspaces.find(w => w.id === activeWs);
+  const business = (active && active.type === 'empresarial') ? active : businesses[0];
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [segment, setSegment] = useState('');
+  const [initialBalance, setInitialBalance] = useState('');
+
+  function createBusiness() {
+    if (!name.trim()) return;
+    const wsId = uid('ws');
+    setDb(prev => {
+      const next = { ...prev, workspaces: [...prev.workspaces, { id: wsId, type: 'empresarial', name: name.trim(), segment, currency: 'BRL' }] };
+      if (initialBalance) next.accounts = [...next.accounts, { id: uid('acc'), workspaceId: wsId, name: 'Conta principal', type: 'corrente', balance: Number(initialBalance.replace(',', '.')) || 0 }];
+      return next;
+    });
+    setActiveWs(wsId);
+    setCreateOpen(false);
+  }
+
+  if (!business) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '80px 16px' }}>
+        <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(62,124,255,0.15)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}><Icon name="building" size={24} /></div>
+        <h2 style={{ fontSize: 19, fontWeight: 600, margin: 0 }}>Crie seu ambiente empresarial</h2>
+        <p style={{ marginTop: 8, maxWidth: 340, fontSize: 14, color: 'var(--muted)' }}>Contas, fluxo de caixa e resultado da sua empresa ficam separados do seu dinheiro pessoal.</p>
+        <Button style={{ marginTop: 16 }} onClick={() => setCreateOpen(true)}><Icon name="plus" size={18} /> Criar empresa</Button>
+        <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title="Nova empresa">
+          <Label>Nome</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Minha Empresa LTDA" style={{ marginBottom: 12 }} />
+          <Label>Segmento</Label><Input value={segment} onChange={e => setSegment(e.target.value)} placeholder="Ex: Serviços" style={{ marginBottom: 12 }} />
+          <Label>Saldo inicial</Label><Input inputMode="decimal" value={initialBalance} onChange={e => setInitialBalance(e.target.value)} placeholder="0,00" style={{ marginBottom: 16 }} />
+          <Button style={{ width: '100%' }} onClick={createBusiness}>Criar empresa</Button>
+        </Dialog>
+      </div>
+    );
+  }
+
+  const byWs = arr => arr.filter(r => r.workspaceId === business.id);
+  const accounts = byWs(db.accounts), receivables = byWs(db.receivables), payables = byWs(db.payables);
+  const now = new Date();
+  const revenue = businessRevenue(receivables, now);
+  const expenses = businessExpenses(payables, now);
+  const profit = revenue - expenses;
+  const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+  const cashAvailable = sumAccountBalances(accounts);
+  const pendingReceivables = receivables.filter(r => r.status !== 'recebido').reduce((s, r) => s + r.amount, 0);
+  const pendingPayables = payables.filter(p => p.status !== 'pago').reduce((s, p) => s + p.amount, 0);
+  const cashFlow = cashFlowSeries(receivables, payables);
+
+  function insert(collection, row) { setDb(prev => ({ ...prev, [collection]: [...prev[collection], row] })); }
+  function remove(collection, id) { setDb(prev => ({ ...prev, [collection]: prev[collection].filter(r => r.id !== id) })); }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Empresa</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>{business.name}</p></div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[['overview', 'Visão geral'], ['receivables', 'A receber'], ['payables', 'A pagar']].map(([id, label]) => (
+            <button key={id} onClick={() => setTab(id)} style={{ borderRadius: 999, padding: '6px 14px', fontSize: 13, fontWeight: 500, border: 'none', background: tab === id ? 'var(--primary)' : 'var(--surface2)', color: tab === id ? '#fff' : 'var(--muted)' }}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {tab === 'overview' && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }} className="stat-grid-6">
+            <StatCard label="Faturamento (mês)" value={revenue} tone="positive" />
+            <StatCard label="Despesas (mês)" value={expenses} tone="negative" />
+            <StatCard label="Resultado" value={profit} tone={profit >= 0 ? 'positive' : 'negative'} />
+            <StatCard label="Caixa disponível" value={cashAvailable} />
+            <StatCard label="A receber" value={pendingReceivables} tone="accent" />
+            <StatCard label="A pagar" value={pendingPayables} tone="negative" />
+          </div>
+          <Card style={{ padding: 16 }}>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Margem</p>
+            <p className="mono" style={{ margin: '4px 0 0', fontSize: 22, fontWeight: 600, color: margin >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{margin.toFixed(1)}%</p>
+          </Card>
+          <Card style={{ padding: 16 }}>
+            <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Fluxo de caixa (6 meses)</p>
+            <SimpleLineChart data={cashFlow} dataKey="saldo" />
+          </Card>
+        </>
+      )}
+      {tab === 'receivables' && <ReceivablesPanel db={db} business={business} insert={insert} remove={remove} />}
+      {tab === 'payables' && <PayablesPanel db={db} business={business} insert={insert} remove={remove} />}
+
+      <style>{`@media (min-width: 1024px) { .stat-grid-6 { grid-template-columns: repeat(3,1fr) !important; } }`}</style>
+    </div>
+  );
+}
+
+const REC_STATUS_TONE = { recebido: 'success', pendente: 'warning', atrasado: 'danger' };
+function ReceivablesPanel({ db, business, insert, remove }) {
+  const receivables = db.receivables.filter(r => r.workspaceId === business.id);
+  const customers = db.customers.filter(c => c.workspaceId === business.id);
+  const [open, setOpen] = useState(false);
+  const [newCustomerMode, setNewCustomerMode] = useState(false);
+  const [customerId, setCustomerId] = useState('');
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [dueDate, setDueDate] = useState(todayIso());
+  const [status, setStatus] = useState('pendente');
+
+  function customerName(id) { return (customers.find(c => c.id === id) || {}).name || '—'; }
+  function handleSave() {
+    if (!description.trim() || !amount) return;
+    let finalId = customerId;
+    if (newCustomerMode && newCustomerName.trim()) {
+      finalId = uid('cust');
+      insert('customers', { id: finalId, workspaceId: business.id, name: newCustomerName.trim() });
+    }
+    insert('receivables', { id: uid('rec'), workspaceId: business.id, customerId: finalId, description: description.trim(), amount: Number(amount.replace(',', '.')) || 0, dueDate, status });
+    setDescription(''); setAmount(''); setNewCustomerName(''); setOpen(false);
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}><Button size="sm" onClick={() => setOpen(true)}><Icon name="plus" size={16} /> Nova cobrança</Button></div>
+      <Card>
+        {receivables.map(r => (
+          <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div><p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{r.description}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{customerName(r.customerId)} · vence {new Date(r.dueDate).toLocaleDateString('pt-BR')}</p></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Badge tone={REC_STATUS_TONE[r.status]}>{r.status}</Badge>
+              <span className="mono" style={{ fontSize: 14, fontWeight: 500 }}>{fmt(r.amount)}</span>
+              <button onClick={() => remove('receivables', r.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="trash" size={16} /></button>
+            </div>
+          </div>
+        ))}
+        {receivables.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhuma conta a receber cadastrada.</p>}
+      </Card>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Nova conta a receber">
+        <Label>Cliente</Label>
+        {!newCustomerMode ? (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <Select value={customerId} onChange={e => setCustomerId(e.target.value)}><option value="">Selecionar</option>{customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Select>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setNewCustomerMode(true)}>Novo</Button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <Input value={newCustomerName} onChange={e => setNewCustomerName(e.target.value)} placeholder="Nome do cliente" />
+            <Button type="button" variant="secondary" size="sm" onClick={() => setNewCustomerMode(false)}>Cancelar</Button>
+          </div>
+        )}
+        <Label>Descrição</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Projeto X" style={{ marginBottom: 12 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <div><Label>Valor</Label><Input inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0,00" /></div>
+          <div><Label>Vencimento</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
+        </div>
+        <Label>Status</Label>
+        <Select value={status} onChange={e => setStatus(e.target.value)} style={{ marginBottom: 16 }}><option value="pendente">Pendente</option><option value="recebido">Recebido</option><option value="atrasado">Atrasado</option></Select>
+        <Button style={{ width: '100%' }} onClick={handleSave}>Salvar</Button>
+      </Dialog>
+    </div>
+  );
+}
+
+const PAY_CATEGORIES = ['marketing', 'salários', 'aluguel', 'software', 'impostos', 'fornecedores', 'transporte', 'equipamentos', 'vendas', 'serviços'];
+const PAY_STATUS_TONE = { pago: 'success', pendente: 'warning', atrasado: 'danger' };
+function PayablesPanel({ db, business, insert, remove }) {
+  const payables = db.payables.filter(p => p.workspaceId === business.id);
+  const suppliers = db.suppliers.filter(s => s.workspaceId === business.id);
+  const [open, setOpen] = useState(false);
+  const [newSupplierMode, setNewSupplierMode] = useState(false);
+  const [supplierId, setSupplierId] = useState('');
+  const [newSupplierName, setNewSupplierName] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState(PAY_CATEGORIES[0]);
+  const [amount, setAmount] = useState('');
+  const [dueDate, setDueDate] = useState(todayIso());
+  const [status, setStatus] = useState('pendente');
+
+  function supplierName(id) { return (suppliers.find(s => s.id === id) || {}).name || '—'; }
+  function handleSave() {
+    if (!description.trim() || !amount) return;
+    let finalId = supplierId;
+    if (newSupplierMode && newSupplierName.trim()) {
+      finalId = uid('sup');
+      insert('suppliers', { id: finalId, workspaceId: business.id, name: newSupplierName.trim(), category });
+    }
+    insert('payables', { id: uid('pay'), workspaceId: business.id, supplierId: finalId, description: description.trim(), category, amount: Number(amount.replace(',', '.')) || 0, dueDate, status });
+    setDescription(''); setAmount(''); setNewSupplierName(''); setOpen(false);
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}><Button size="sm" onClick={() => setOpen(true)}><Icon name="plus" size={16} /> Nova conta a pagar</Button></div>
+      <Card>
+        {payables.map(p => (
+          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div><p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>{p.description}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{supplierName(p.supplierId)} · {p.category} · vence {new Date(p.dueDate).toLocaleDateString('pt-BR')}</p></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Badge tone={PAY_STATUS_TONE[p.status]}>{p.status}</Badge>
+              <span className="mono" style={{ fontSize: 14, fontWeight: 500 }}>{fmt(p.amount)}</span>
+              <button onClick={() => remove('payables', p.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)' }}><Icon name="trash" size={16} /></button>
+            </div>
+          </div>
+        ))}
+        {payables.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--muted)' }}>Nenhuma conta a pagar cadastrada.</p>}
+      </Card>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Nova conta a pagar">
+        <Label>Fornecedor</Label>
+        {!newSupplierMode ? (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <Select value={supplierId} onChange={e => setSupplierId(e.target.value)}><option value="">Selecionar</option>{suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</Select>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setNewSupplierMode(true)}>Novo</Button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <Input value={newSupplierName} onChange={e => setNewSupplierName(e.target.value)} placeholder="Nome do fornecedor" />
+            <Button type="button" variant="secondary" size="sm" onClick={() => setNewSupplierMode(false)}>Cancelar</Button>
+          </div>
+        )}
+        <Label>Descrição</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Assinatura mensal" style={{ marginBottom: 12 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <div><Label>Categoria</Label><Select value={category} onChange={e => setCategory(e.target.value)}>{PAY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</Select></div>
+          <div><Label>Valor</Label><Input inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0,00" /></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div><Label>Vencimento</Label><Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
+          <div><Label>Status</Label><Select value={status} onChange={e => setStatus(e.target.value)}><option value="pendente">Pendente</option><option value="pago">Pago</option><option value="atrasado">Atrasado</option></Select></div>
+        </div>
+        <Button style={{ width: '100%' }} onClick={handleSave}>Salvar</Button>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ============================== REPORTS ============================== */
+const PERIOD_MONTHS = { mes: 1, trimestre: 3, semestre: 6, ano: 12 };
+const PERIOD_LABEL = { mes: 'Este mês', trimestre: 'Trimestre', semestre: 'Semestre', ano: 'Ano' };
+function Reports({ db, workspace, byWs }) {
+  const [period, setPeriod] = useState('semestre');
+  const transactions = byWs(db.transactions);
+  const categories = byWs(db.categories);
+
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - PERIOD_MONTHS[period]);
+  const filtered = transactions.filter(t => new Date(t.date) >= cutoff);
+  const income = filtered.filter(t => t.kind === 'receita').reduce((s, t) => s + t.amount, 0);
+  const expenses = filtered.filter(t => t.kind === 'despesa').reduce((s, t) => s + t.amount, 0);
+  const balance = income - expenses;
+
+  const byCategoryMap = {};
+  filtered.filter(t => t.kind === 'despesa').forEach(t => {
+    const name = (categories.find(c => c.id === t.categoryId) || {}).name || 'Outros';
+    byCategoryMap[name] = (byCategoryMap[name] || 0) + t.amount;
+  });
+  const byCategory = Object.entries(byCategoryMap).map(([category, total]) => ({ category, total })).sort((a, b) => b.total - a.total);
+  const maxCat = Math.max(1, ...byCategory.map(c => c.total));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Relatórios</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Indicadores de {workspace.name}.</p></div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {Object.keys(PERIOD_LABEL).map(p => (
+          <button key={p} onClick={() => setPeriod(p)} style={{ borderRadius: 999, padding: '6px 14px', fontSize: 13, fontWeight: 500, border: 'none', background: period === p ? 'var(--primary)' : 'var(--surface2)', color: period === p ? '#fff' : 'var(--muted)' }}>{PERIOD_LABEL[p]}</button>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+        <StatCard label="Receitas no período" value={income} tone="positive" />
+        <StatCard label="Despesas no período" value={expenses} tone="negative" />
+        <StatCard label="Saldo do período" value={balance} tone={balance >= 0 ? 'positive' : 'negative'} />
+      </div>
+      <Card style={{ padding: 16 }}>
+        <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Despesas por categoria</p>
+        {byCategory.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {byCategory.map((c, i) => (
+              <div key={i}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}><span>{c.category}</span><span className="mono">{fmt(c.total)}</span></div>
+                <div style={{ height: 8, borderRadius: 999, background: 'var(--surface2)', overflow: 'hidden' }}><div style={{ height: '100%', width: (c.total / maxCat) * 100 + '%', background: 'var(--primary)' }} /></div>
+              </div>
+            ))}
+          </div>
+        ) : <p style={{ textAlign: 'center', padding: '24px 0', fontSize: 13, color: 'var(--muted)' }}>Nenhuma despesa no período selecionado.</p>}
+      </Card>
+      <p style={{ fontSize: 12, color: 'var(--muted)' }}>Exportação de relatórios (PDF/Excel) está planejada para uma próxima versão.</p>
+    </div>
+  );
+}
+
+/* ============================== HELP ============================== */
+const HELP_TOPICS = [
+  { icon: 'wallet', title: 'Contas', body: 'Cadastre contas correntes, poupança e dinheiro em espécie em "Contas". O saldo somado forma seu saldo disponível.' },
+  { icon: 'tx', title: 'Receitas e despesas', body: 'Toda entrada ou saída de dinheiro é lançada em "Transações". Marque o status para manter o dashboard atualizado.' },
+  { icon: 'target', title: 'Metas', body: 'Em "Metas", defina valor, prazo e prioridade. O sistema calcula quanto guardar por mês.' },
+  { icon: 'card', title: 'Cartões', body: 'Cadastre limite, fechamento e vencimento. Compras parceladas são distribuídas automaticamente entre as faturas.' },
+  { icon: 'question', title: 'Posso Gastar?', body: 'No Dashboard, mostra o impacto real de uma compra no saldo seguro e nas metas, antes de você decidir.' },
+  { icon: 'building', title: 'Modo Empresa', body: 'Em "Empresa", acompanhe faturamento, despesas, contas a pagar e a receber — tudo separado do pessoal.' },
+];
+function Help({ onReopenOnboarding }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Ajuda</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Tutoriais rápidos por funcionalidade.</p></div>
+        <Button variant="secondary" onClick={onReopenOnboarding}>Reabrir tutorial completo</Button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="help-grid">
+        {HELP_TOPICS.map(t => (
+          <Card key={t.title} style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(62,124,255,0.15)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={t.icon} size={18} /></div>
+              <p style={{ margin: 0, fontWeight: 500 }}>{t.title}</p>
+            </div>
+            <p style={{ marginTop: 12, fontSize: 14, color: 'var(--muted)' }}>{t.body}</p>
+          </Card>
+        ))}
+      </div>
+      <style>{`@media (min-width: 768px) { .help-grid { grid-template-columns: repeat(2,1fr) !important; } }`}</style>
+    </div>
+  );
+}
+
+/* ============================== SETTINGS ============================== */
+function Settings({ db, setDb, onReset, onSignOut }) {
+  const [usageMode, setUsageMode] = useState(db.profile.usageMode);
+  function saveUsageMode(mode) {
+    setUsageMode(mode);
+    setDb(prev => ({ ...prev, profile: { ...prev.profile, usageMode: mode } }));
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div><h1 style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>Configurações</h1><p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--muted)' }}>Preferências da conta e do sistema.</p></div>
+      <Card style={{ padding: 16 }}>
+        <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Conta</p>
+        <p style={{ fontSize: 14, marginBottom: 12 }}>Nome: <span style={{ color: 'var(--muted)' }}>{db.profile.fullName}</span></p>
+        <Label>Como você usa o Meu CFO</Label>
+        <Select value={usageMode} onChange={e => saveUsageMode(e.target.value)} style={{ marginBottom: 16 }}>
+          <option value="pessoa">Pessoa</option><option value="empresa">Empresa</option><option value="pessoa_empresa">Pessoa + Empresa</option>
+        </Select>
+        <Button variant="secondary" onClick={onSignOut}>Sair</Button>
+      </Card>
+      <Card style={{ padding: 16 }}>
+        <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>Dados</p>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 12 }}>Este app roda com dados salvos localmente neste navegador — nada é enviado para nenhum servidor. Se você trocar de aparelho ou limpar os dados do navegador, essas informações não estarão lá.</p>
+        <Button variant="danger" size="sm" onClick={() => { if (confirm('Isso vai apagar TODOS os seus dados cadastrados e começar do zero. Essa ação não pode ser desfeita. Continuar?')) onReset(); }}>Apagar tudo e recomeçar do zero</Button>
+      </Card>
+    </div>
+  );
+}
+
+/* ============================== RENDER ============================== */
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+
